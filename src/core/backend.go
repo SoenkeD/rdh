@@ -12,9 +12,11 @@ const StateNew State = "New"
 const StateReady State = "Ready"
 
 type MutableSpecDefinition struct {
+	Annotations   map[string]string
+	Labels        map[string]string
 	NextReconcile *time.Time
-	Status        string
 	Specs         any
+	Status        string
 }
 
 type ControlledSpecDefinition struct {
