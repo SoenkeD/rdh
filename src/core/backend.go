@@ -11,12 +11,22 @@ type State string
 const StateNew State = "New"
 const StateReady State = "Ready"
 
-type SpecDefinition struct {
-	Kind          string
-	UpdatedAt     time.Time
+type MutableSpecDefinition struct {
 	NextReconcile *time.Time
 	Status        string
 	Specs         any
+}
+
+type ControlledSpecDefinition struct {
+	UpdatedAt time.Time
+}
+
+type SpecDefinition struct {
+	Kind      string
+	CreatedAt time.Time
+
+	ControlledSpecDefinition
+	MutableSpecDefinition
 }
 
 type ResourceDefinitionHandler struct {
@@ -39,21 +49,34 @@ func (rdh *ResourceDefinitionHandler) CreateSpec(id, kind string, specs any) err
 	nextReconcile := time.Now()
 
 	rdh.Specs[id] = SpecDefinition{
-		Kind:          kind,
-		UpdatedAt:     time.Now(),
-		NextReconcile: &nextReconcile,
-		Status:        string(StateNew),
-		Specs:         specs,
+		Kind:      kind,
+		CreatedAt: time.Now(),
+		ControlledSpecDefinition: ControlledSpecDefinition{
+			UpdatedAt: time.Now(),
+		},
+		MutableSpecDefinition: MutableSpecDefinition{
+			NextReconcile: &nextReconcile,
+			Status:        string(StateNew),
+			Specs:         specs,
+		},
 	}
 
 	return nil
 }
 
-func (rdh *ResourceDefinitionHandler) SetSpec(id string, spec SpecDefinition) error {
+func (rdh *ResourceDefinitionHandler) SetSpec(id string, mSpec MutableSpecDefinition) error {
 
-	log.Println("Update spec", id, spec)
+	spec, err := rdh.GetSpec(id)
+	if err != nil {
+		return err
+	}
+
+	spec.MutableSpecDefinition = mSpec
+	spec.ControlledSpecDefinition.UpdatedAt = time.Now()
 
 	rdh.Specs[id] = spec
+
+	log.Println("Update spec", id, spec)
 
 	return nil
 }

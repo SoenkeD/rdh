@@ -8,7 +8,7 @@ import (
 	"github.com/SoenkeD/rdh/src/core"
 )
 
-type ResourceKindHandler func(id string, specs core.SpecDefinition) (core.SpecDefinition, error)
+type ResourceKindHandler func(id string, specs core.SpecDefinition) (core.MutableSpecDefinition, error)
 
 type Local struct {
 	Rdhs           map[string]ResourceKindHandler
@@ -51,9 +51,6 @@ func (loc *Local) HandleNext(backend *core.ResourceDefinitionHandler) error {
 
 		return err
 	}
-
-	setSpecs.Kind = specs.Kind
-	setSpecs.UpdatedAt = time.Now()
 
 	if setSpecs.NextReconcile == nil {
 		nextReconcile := time.Now()
