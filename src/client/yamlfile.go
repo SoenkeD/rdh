@@ -9,13 +9,17 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+type ParseSpecFileFn func(specFile SpecFile) (any, error)
+
 type YamlFile struct {
-	SourceDir string
+	SourceDir   string
+	ParseFileFn map[string]ParseSpecFileFn
 }
 
-func NewYamlFile(sourceDir string) *YamlFile {
+func NewYamlFile(sourceDir string, parseFileFn map[string]ParseSpecFileFn) *YamlFile {
 	return &YamlFile{
-		SourceDir: sourceDir,
+		SourceDir:   sourceDir,
+		ParseFileFn: parseFileFn,
 	}
 }
 
@@ -32,9 +36,7 @@ func (yf *YamlFile) LoadSpecs(rdhBe *core.ResourceDefinitionHandler) error {
 			return err
 		}
 
-		var xy map[string]func(specFile SpecFile) (any, error)
-
-		entry, ok := xy[specFile.Kind]
+		entry, ok := yf.ParseFileFn[specFile.Kind]
 		if !ok {
 			return fmt.Errorf("resource kind %s in %s is not supported", specFile.Kind, specFile.Id)
 		}
