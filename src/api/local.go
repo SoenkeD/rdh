@@ -18,9 +18,14 @@ type Local struct {
 
 func (loc *Local) Init(backend *core.ResourceDefinitionHandler, done chan bool) error {
 
-	for len(done) == 0 {
-
-	}
+	go func() {
+		for len(done) == 0 {
+			err := loc.HandleNext(backend)
+			if err != nil {
+				panic(err)
+			}
+		}
+	}()
 
 	return nil
 }
