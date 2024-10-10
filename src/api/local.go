@@ -13,6 +13,7 @@ type ResourceKindHandler func(id string, specs core.SpecDefinition) (core.Mutabl
 type Local struct {
 	Rdhs           map[string]ResourceKindHandler
 	IdleWait       time.Duration
+	ErrorWait      time.Duration
 	ReadyReconcile time.Duration
 }
 
@@ -50,6 +51,11 @@ func (loc *Local) HandleNext(backend *core.ResourceDefinitionHandler) error {
 		log.Println("resource kind handler error", err)
 
 		return err
+	}
+
+	if setSpecs.Status == string(core.StateError) {
+		nextReconcile := time.Now().Add(loc.ErrorWait)
+		setSpecs.NextReconcile = &nextReconcile
 	}
 
 	if setSpecs.NextReconcile == nil {

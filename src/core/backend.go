@@ -10,6 +10,7 @@ type State string
 
 const StateNew State = "New"
 const StateReady State = "Ready"
+const StateError State = "Error"
 
 type MutableSpecDefinition struct {
 	Annotations   map[string]string
