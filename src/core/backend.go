@@ -2,7 +2,6 @@ package core
 
 import (
 	"fmt"
-	"log"
 	"time"
 )
 
@@ -12,12 +11,17 @@ const StateNew State = "New"
 const StateReady State = "Ready"
 const StateError State = "Error"
 
+type CreationSpecDefinition struct {
+	Annotations map[string]string
+	Labels      map[string]string
+	Specs       any
+}
+
 type MutableSpecDefinition struct {
-	Annotations   map[string]string
-	Labels        map[string]string
 	NextReconcile *time.Time
-	Specs         any
 	Status        string
+
+	CreationSpecDefinition
 }
 
 type ControlledSpecDefinition struct {
@@ -42,7 +46,7 @@ func NewResourceDefinitionHandler() *ResourceDefinitionHandler {
 	}
 }
 
-func (rdh *ResourceDefinitionHandler) CreateSpec(id, kind string, specs any) error {
+func (rdh *ResourceDefinitionHandler) CreateSpec(id, kind string, specs CreationSpecDefinition) error {
 
 	_, ok := rdh.Specs[id]
 	if ok {
@@ -58,9 +62,9 @@ func (rdh *ResourceDefinitionHandler) CreateSpec(id, kind string, specs any) err
 			UpdatedAt: time.Now(),
 		},
 		MutableSpecDefinition: MutableSpecDefinition{
-			NextReconcile: &nextReconcile,
-			Status:        string(StateNew),
-			Specs:         specs,
+			NextReconcile:          &nextReconcile,
+			Status:                 string(StateNew),
+			CreationSpecDefinition: specs,
 		},
 	}
 
@@ -78,8 +82,6 @@ func (rdh *ResourceDefinitionHandler) SetSpec(id string, mSpec MutableSpecDefini
 	spec.ControlledSpecDefinition.UpdatedAt = time.Now()
 
 	rdh.Specs[id] = spec
-
-	log.Println("Update spec", id, spec)
 
 	return nil
 }

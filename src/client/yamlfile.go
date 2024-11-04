@@ -9,7 +9,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type ParseSpecFileFn func(specFile SpecFile) (any, error)
+type ParseSpecFileFn func(specFile SpecFile) (core.CreationSpecDefinition, error)
 
 type YamlFile struct {
 	SourceDir   string
@@ -41,7 +41,7 @@ func (yf *YamlFile) LoadSpecs(rdhBe *core.ResourceDefinitionHandler) error {
 			return fmt.Errorf("resource kind %s in %s is not supported", specFile.Kind, specFile.Id)
 		}
 
-		var specs any
+		var specs core.CreationSpecDefinition
 		specs, err = entry(specFile)
 
 		if err != nil {
